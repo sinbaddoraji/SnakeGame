@@ -70,9 +70,29 @@ public:
 	int direction = 1;
 
 	int length = 1;
+	bool hasDied;
 	void Move()
 	{
-		head->Move(direction, true);
+		if (!hasDied)
+		{
+			head->Move(direction, true);
+			hasDied = HasBittenSelf();
+		}
+	}
+
+	bool HasBittenSelf()
+	{
+		SnakeBlock* current = head->follower;
+
+		while (current != NULL)
+		{
+			if (current->x == head->x && current->y == head->y)
+			{
+				return true;
+			}
+			current = current->follower;
+		}
+		return false;
 	}
 
 	void AddMember()
@@ -137,9 +157,20 @@ bool isRunning = false;
 
 void BasicSnakeGame::GameBoard::StartGame()
 {
-	if (isRunning) return;
+	if (!snake.hasDied && isRunning) return;
+
 	isRunning = true;
 
+	delete snake.head->follower;
+	snake.head->follower = NULL;
+
+	delete snake.tail;
+	snake.tail = NULL;
+
+	snake.length = 1;
+
+	
+	snake.hasDied = false;
 	gameTimer->Start();
 }
 
@@ -159,6 +190,10 @@ void BasicSnakeGame::GameBoard::PaintToGrid()
 
 System::Void BasicSnakeGame::GameBoard::gameTimer_Tick(System::Object^ sender, System::EventArgs^ e)
 {
+	if (snake.hasDied)
+	{
+		gameTimer->Stop();
+	}
 	snake.Move();
 	PaintToGrid();
 	return System::Void();
