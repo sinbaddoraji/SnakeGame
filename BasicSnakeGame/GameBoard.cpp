@@ -10,10 +10,6 @@ public:
 	int parentY;
 	SnakeBlock* follower = NULL;
 
-	void Ripple(int direction)
-	{
-
-	}
 	void Move(int direction, bool isHead)
 	{
 		int xCopy = x;
@@ -24,27 +20,27 @@ public:
 			x = parentX;
 			y = parentY;
 		}
-		else if (isHead && direction == 0)
+		else if (direction == 0)
 		{
 			if (x <= 0)
-				x = 50;
+				x = 40;
 			x--;
 		}
-		else if (isHead && direction == 1)
+		else if (direction == 1)
 		{
 			if (y <= 0)
-				y = 50;
+				y = 40;
 			y--;
 		}
-		else if (isHead && direction == 2)
+		else if (direction == 2)
 		{
-			if (x >= 49)
+			if (x >= 40)
 				x = 0;
 			x++;
 		}
-		else if (isHead && direction == 3)
+		else if (direction == 3)
 		{
-			if (y >= 49)
+			if (y >= 40)
 				y = 0;
 			y++;
 		}
@@ -73,6 +69,7 @@ public:
 	SnakeBlock* tail = NULL;
 	int direction = 1;
 
+	int length = 1;
 	void Move()
 	{
 		head->Move(direction, true);
@@ -80,6 +77,8 @@ public:
 
 	void AddMember()
 	{
+		length++;
+
 		if (tail == NULL)
 		{
 			tail = new SnakeBlock;
@@ -135,6 +134,7 @@ Snake snake;
 
 bool isRunning = false;
 
+
 void BasicSnakeGame::GameBoard::StartGame()
 {
 	if (isRunning) return;
@@ -148,6 +148,7 @@ void BasicSnakeGame::GameBoard::PaintToGrid()
 {
 	//A 9 X 9 grid
 	SnakeBlock* current = snake.head;
+	
 	ClearGrid();
 	while (current != NULL)
 	{

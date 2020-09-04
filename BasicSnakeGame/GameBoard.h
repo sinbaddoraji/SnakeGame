@@ -19,6 +19,7 @@ namespace BasicSnakeGame {
 		int x;
 		int y;
 		Graphics^ g;
+		System::Collections::Generic::List<String^>^ snakeParts;
 
 		GameBoard(void)
 		{
@@ -80,7 +81,7 @@ private: System::ComponentModel::IContainer^ components;
 			// 
 			// gameTimer
 			// 
-			this->gameTimer->Interval = 250;
+			this->gameTimer->Interval = 150;
 			this->gameTimer->Tick += gcnew System::EventHandler(this, &GameBoard::gameTimer_Tick);
 			// 
 			// GameBoard
