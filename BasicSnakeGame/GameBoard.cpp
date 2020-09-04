@@ -146,13 +146,42 @@ public:
 
 class Food
 {
+public:
+	int index;
 	int x;
 	int y;
 };
 
 Snake snake;
-
 bool isRunning = false;
+
+Food foodList[5];
+Food nullFood;
+int lastFreeIndex = 0;
+
+void InitalizeFoodList()
+{
+	nullFood.index = nullFood.x = nullFood.y = -1;
+	for (int i = 0; i < 5; i++) foodList[i] = nullFood;
+}
+
+System::Void BasicSnakeGame::GameBoard::foodGen_Tick(System::Object^ sender, System::EventArgs^ e)
+{
+	//foodGen->Interval = BasicSnakeGame::GameBoard::gameTimer->Interval * rand->Next(1, 5);
+	if(lastFreeIndex == -1) return System::Void();
+
+	Food food;
+
+	food.index = lastFreeIndex;
+	food.x = rand->Next(0, 40);
+	food.y = rand->Next(0, 40);
+
+	foodList[lastFreeIndex] = food;
+	lastFreeIndex++;
+
+	if (lastFreeIndex > 4) lastFreeIndex = -1;
+	return System::Void();
+}
 
 
 void BasicSnakeGame::GameBoard::StartGame()
@@ -172,19 +201,44 @@ void BasicSnakeGame::GameBoard::StartGame()
 	
 	snake.hasDied = false;
 	gameTimer->Start();
+
+	InitalizeFoodList();
+	foodGen->Start();
 }
 
 
 void BasicSnakeGame::GameBoard::PaintToGrid()
 {
+	ClearGrid();
+	//Paint food
+	for (int i = 0; i < 5; i++)
+	{
+		if (foodList[i].index != -1)
+		{
+			PaintPoint(foodList[i].x, foodList[i].y, true);
+		}
+	}
+
 	//A 9 X 9 grid
 	SnakeBlock* current = snake.head;
 	
-	ClearGrid();
+	
 	while (current != NULL)
 	{
-		PaintPoint(current->x, current->y);
+		PaintPoint(current->x, current->y, false);
 		current = current->follower;
+	}
+}
+
+void AssertEatenFood()
+{
+	for (int i = 0; i < 5; i++)
+	{
+		if (foodList[i].x == snake.head->x && foodList[i].y == snake.head->y)
+		{
+			lastFreeIndex = i;
+			foodList[i] = nullFood;
+		}
 	}
 }
 
@@ -193,15 +247,21 @@ System::Void BasicSnakeGame::GameBoard::gameTimer_Tick(System::Object^ sender, S
 	if (snake.hasDied)
 	{
 		gameTimer->Stop();
+		foodGen->Stop();
 	}
+
+	AssertEatenFood();
 	snake.Move();
+	
+
+
 	PaintToGrid();
 	return System::Void();
 }
 
 void BasicSnakeGame::GameBoard::Move(int direction)
 {
-	snake.direction == direction;
+	snake.direction = direction;
 }
 
 System::Void BasicSnakeGame::GameBoard::GameBoard_KeyDown(System::Object^ sender, System::Windows::Forms::KeyEventArgs^ e)
@@ -241,3 +301,4 @@ System::Void BasicSnakeGame::GameBoard::GameBoard_KeyDown(System::Object^ sender
 
 	return System::Void();
 }
+

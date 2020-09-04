@@ -20,18 +20,33 @@ namespace BasicSnakeGame {
 		int y;
 		Graphics^ g;
 		System::Collections::Generic::List<String^>^ snakeParts;
+	private: System::Windows::Forms::Timer^ foodGen;
+	public:
+		Random^ rand;
 
 		GameBoard(void)
 		{
 			InitializeComponent();
+
 			g = this->CreateGraphics();
+			rand = gcnew Random();
+
 			DoubleBuffered = true;
 		}
 
-		void PaintPoint(int x, int y)
+		void PaintPoint(int x, int y, bool isFood)
 		{
 			Rectangle r(x * 15, y * 15, 15, 15);
-			g->FillRectangle(System::Drawing::Brushes::Blue, r);
+
+			if (isFood)
+			{
+				g->FillRectangle(System::Drawing::Brushes::Red, r);
+			}
+			else
+			{
+				g->FillRectangle(System::Drawing::Brushes::Blue, r);
+			}
+			
 		}
 
 		void ClearGrid()
@@ -77,12 +92,18 @@ private: System::ComponentModel::IContainer^ components;
 		{
 			this->components = (gcnew System::ComponentModel::Container());
 			this->gameTimer = (gcnew System::Windows::Forms::Timer(this->components));
+			this->foodGen = (gcnew System::Windows::Forms::Timer(this->components));
 			this->SuspendLayout();
 			// 
 			// gameTimer
 			// 
 			this->gameTimer->Interval = 150;
 			this->gameTimer->Tick += gcnew System::EventHandler(this, &GameBoard::gameTimer_Tick);
+			// 
+			// foodGen
+			// 
+			this->foodGen->Interval = 2000;
+			this->foodGen->Tick += gcnew System::EventHandler(this, &GameBoard::foodGen_Tick);
 			// 
 			// GameBoard
 			// 
@@ -99,5 +120,6 @@ private: System::ComponentModel::IContainer^ components;
 #pragma endregion
 	private: System::Void gameTimer_Tick(System::Object^ sender, System::EventArgs^ e);
 	private: System::Void GameBoard_KeyDown(System::Object^ sender, System::Windows::Forms::KeyEventArgs^ e);
-};
+	private: System::Void foodGen_Tick(System::Object^ sender, System::EventArgs^ e);
+	};
 }
