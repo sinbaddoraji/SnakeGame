@@ -1,233 +1,23 @@
 #include "GameBoard.h"
 #include <cstddef>
+#include "Snake.h"
+#include "Food.h"
 
-class SnakeBlock
+Food foodList[5]; //Food in the game (Only 5 at a time for now)
+bool isRunning = false; //Game is running
+Snake snake; //Snake being controlled
+int lastFreeFoodIndex = 0; 
+
+Food GetNullFood()
 {
-public:
-	int x;
-	int y;
-	int parentX;
-	int parentY;
-	SnakeBlock* follower = NULL;
-
-	void Move(int direction, bool isHead)
-	{
-		int xCopy = x;
-		int yCopy = y;
-
-		if (!isHead)
-		{
-			x = parentX;
-			y = parentY;
-		}
-		else if (direction == 0)
-		{
-			if (x <= 0)
-				x = 40;
-			x--;
-		}
-		else if (direction == 1)
-		{
-			if (y <= 0)
-				y = 40;
-			y--;
-		}
-		else if (direction == 2)
-		{
-			if (x >= 40)
-				x = 0;
-			x++;
-		}
-		else if (direction == 3)
-		{
-			if (y >= 40)
-				y = 0;
-			y++;
-		}
-
-		if (follower != NULL)
-		{
-			follower->parentX = xCopy;
-			follower->parentY = yCopy;
-			follower->Move(direction, false);
-		}
-	}
-};
-
-class Snake
-{
-public:
-
-	Snake()
-	{
-		head = new SnakeBlock;
-		head->x = 25;
-		head->y = 25;
-	}
-
-	SnakeBlock* head;
-	SnakeBlock* tail = NULL;
-	int direction = 1;
-
-	int length = 1;
-	bool hasDied;
-	void Move()
-	{
-		if (!hasDied)
-		{
-			head->Move(direction, true);
-			hasDied = HasBittenSelf();
-		}
-	}
-
-	bool HasBittenSelf()
-	{
-		SnakeBlock* current = head->follower;
-
-		while (current != NULL)
-		{
-			if (current->x == head->x && current->y == head->y)
-			{
-				return true;
-			}
-			current = current->follower;
-		}
-		return false;
-	}
-
-	void AddMember()
-	{
-		length++;
-
-		if (tail == NULL)
-		{
-			tail = new SnakeBlock;
-			head->follower = tail;
-			SetupSnakePart(tail, head);
-		}
-		else
-		{
-			SnakeBlock* newSnakeBlock = new SnakeBlock;
-			tail->follower = newSnakeBlock;
-
-			SetupSnakePart(newSnakeBlock, tail);
-			tail = newSnakeBlock;
-		}
-	}
-
-	void SetupSnakePart(SnakeBlock* snakePart, SnakeBlock* elder)
-	{
-		if (direction == 0)
-		{
-			//if going left
-			snakePart->y = elder->y;
-			snakePart->x = elder->x + 1;
-		}
-		else if (direction == 1)
-		{
-			//if going up
-			snakePart->y = elder->y + 1;
-			snakePart->x = elder->x;
-		}
-		else if (direction == 2)
-		{
-			//if going right
-			snakePart->x = elder->x - 1;
-			snakePart->y = elder->y;
-		}
-		else if (direction == 3)
-		{
-			//if going down
-			snakePart->y = elder->y - 1;
-			snakePart->x = elder->x;
-		}
-	}
-};
-
-class Food
-{
-public:
-	int index;
-	int x;
-	int y;
-};
-
-Snake snake;
-bool isRunning = false;
-
-Food foodList[5];
-Food nullFood;
-int lastFreeIndex = 0;
+	Food nullFood;
+	nullFood.index = nullFood.x = nullFood.y = -1;
+	return nullFood;
+}
 
 void InitalizeFoodList()
 {
-	nullFood.index = nullFood.x = nullFood.y = -1;
-	for (int i = 0; i < 5; i++) foodList[i] = nullFood;
-}
-
-System::Void BasicSnakeGame::GameBoard::foodGen_Tick(System::Object^ sender, System::EventArgs^ e)
-{
-	//foodGen->Interval = BasicSnakeGame::GameBoard::gameTimer->Interval * rand->Next(1, 5);
-	if(lastFreeIndex == -1) return System::Void();
-
-	Food food;
-
-	food.index = lastFreeIndex;
-	food.x = rand->Next(0, 40);
-	food.y = rand->Next(0, 40);
-
-	foodList[lastFreeIndex] = food;
-	lastFreeIndex++;
-
-	if (lastFreeIndex > 4) lastFreeIndex = -1;
-	return System::Void();
-}
-
-
-void BasicSnakeGame::GameBoard::StartGame()
-{
-	if (!snake.hasDied && isRunning) return;
-
-	isRunning = true;
-
-	delete snake.head->follower;
-	snake.head->follower = NULL;
-
-	delete snake.tail;
-	snake.tail = NULL;
-
-	snake.length = 1;
-
-	
-	snake.hasDied = false;
-	gameTimer->Start();
-
-	InitalizeFoodList();
-	foodGen->Start();
-}
-
-
-void BasicSnakeGame::GameBoard::PaintToGrid()
-{
-	ClearGrid();
-	//Paint food
-	for (int i = 0; i < 5; i++)
-	{
-		if (foodList[i].index != -1)
-		{
-			PaintPoint(foodList[i].x, foodList[i].y, true);
-		}
-	}
-
-	//A 9 X 9 grid
-	SnakeBlock* current = snake.head;
-	
-	
-	while (current != NULL)
-	{
-		PaintPoint(current->x, current->y, false);
-		current = current->follower;
-	}
+	for (int i = 0; i < 5; i++) foodList[i] = GetNullFood();
 }
 
 void AssertEatenFood()
@@ -236,32 +26,12 @@ void AssertEatenFood()
 	{
 		if (foodList[i].x == snake.head->x && foodList[i].y == snake.head->y)
 		{
-			lastFreeIndex = i;
-			foodList[i] = nullFood;
+			lastFreeFoodIndex = i;
+			foodList[i] = GetNullFood();
+			snake.AddMember();
+			break;
 		}
 	}
-}
-
-System::Void BasicSnakeGame::GameBoard::gameTimer_Tick(System::Object^ sender, System::EventArgs^ e)
-{
-	if (snake.hasDied)
-	{
-		gameTimer->Stop();
-		foodGen->Stop();
-	}
-
-	AssertEatenFood();
-	snake.Move();
-	
-
-
-	PaintToGrid();
-	return System::Void();
-}
-
-void BasicSnakeGame::GameBoard::Move(int direction)
-{
-	snake.direction = direction;
 }
 
 System::Void BasicSnakeGame::GameBoard::GameBoard_KeyDown(System::Object^ sender, System::Windows::Forms::KeyEventArgs^ e)
@@ -290,15 +60,103 @@ System::Void BasicSnakeGame::GameBoard::GameBoard_KeyDown(System::Object^ sender
 	{
 		StartGame();
 	}
-	else if (e->KeyCode == Keys::M)
-	{
-		snake.AddMember();
-	}
 
 	//Move snake and redraw graphics
 	snake.Move();
 	PaintToGrid();
 
 	return System::Void();
+}
+
+System::Void BasicSnakeGame::GameBoard::gameTimer_Tick(System::Object^ sender, System::EventArgs^ e)
+{
+	if (snake.hasDied)
+	{
+		gameTimer->Stop();
+		foodGen->Stop();
+	}
+
+	AssertEatenFood();
+	snake.Move();
+
+
+
+	PaintToGrid();
+	return System::Void();
+}
+
+System::Void BasicSnakeGame::GameBoard::foodGen_Tick(System::Object^ sender, System::EventArgs^ e)
+{
+	if (lastFreeFoodIndex == -1 || lastFreeFoodIndex > 4) return System::Void();
+
+	
+
+	while(foodList[lastFreeFoodIndex + 1].index != -1 && lastFreeFoodIndex < 5)
+		lastFreeFoodIndex++;
+
+	if (lastFreeFoodIndex > 4) lastFreeFoodIndex = -1;
+
+	if (lastFreeFoodIndex != -1)
+	{
+		Food food;
+		food.index = lastFreeFoodIndex;
+		food.x = rand->Next(0, 40);
+		food.y = rand->Next(0, 40);
+		foodList[lastFreeFoodIndex] = food;
+		lastFreeFoodIndex++;
+	}
+
+	foodGen->Interval = BasicSnakeGame::GameBoard::gameTimer->Interval * rand->Next(3, 10);
+	return System::Void();
+}
+
+void BasicSnakeGame::GameBoard::Move(int direction)
+{
+	snake.direction = direction;
+}
+
+void BasicSnakeGame::GameBoard::PaintToGrid()
+{
+	ClearGrid();
+	//Paint food
+	for (int i = 0; i < 5; i++)
+	{
+		if (foodList[i].index != -1)
+		{
+			PaintPoint(foodList[i].x, foodList[i].y, true);
+		}
+	}
+
+	//A 9 X 9 grid
+	SnakeBlock* current = snake.head;
+
+
+	while (current != NULL)
+	{
+		PaintPoint(current->x, current->y, false);
+		current = current->follower;
+	}
+}
+
+void BasicSnakeGame::GameBoard::StartGame()
+{
+	if (!snake.hasDied && isRunning) return;
+
+	isRunning = true;
+
+	delete snake.head->follower;
+	snake.head->follower = NULL;
+
+	delete snake.tail;
+	snake.tail = NULL;
+
+	snake.length = 1;
+
+
+	snake.hasDied = false;
+	gameTimer->Start();
+
+	InitalizeFoodList();
+	foodGen->Start();
 }
 

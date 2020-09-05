@@ -64,8 +64,10 @@ namespace BasicSnakeGame {
 			this->AutoScaleDimensions = System::Drawing::SizeF(8, 16);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(782, 753);
+			this->MaximumSize = System::Drawing::Size(800, 800);
+			this->MinimumSize = System::Drawing::Size(800, 800);
 			this->Name = L"MainWindow";
-			this->Text = L"MainWindow";
+			this->Text = L"Snake Game";
 			this->KeyDown += gcnew System::Windows::Forms::KeyEventHandler(this, &MainWindow::MainWindow_KeyDown);
 			this->ResumeLayout(false);
 

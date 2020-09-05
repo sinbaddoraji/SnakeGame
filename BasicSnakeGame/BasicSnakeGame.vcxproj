@@ -124,12 +124,14 @@
     <ClCompile Include="MainWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Food.h" />
     <ClInclude Include="GameBoard.h">
       <FileType>CppControl</FileType>
     </ClInclude>
     <ClInclude Include="MainWindow.h">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="Snake.h" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="GameBoard.resx">
