@@ -18,6 +18,7 @@ Food GetNullFood()
 void InitalizeFoodList()
 {
 	for (int i = 0; i < 5; i++) foodList[i] = GetNullFood();
+	lastFreeFoodIndex = 0;
 }
 
 void AssertEatenFood()
@@ -151,7 +152,6 @@ void BasicSnakeGame::GameBoard::StartGame()
 	snake.tail = NULL;
 
 	snake.length = 1;
-
 
 	snake.hasDied = false;
 	gameTimer->Start();
